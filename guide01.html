@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLEXID · Guide d’annotation</title>
+<style>
+  :root{
+    --ink:#15181d; --ink-soft:#4d5968; --ink-faint:#7a8594;
+    --paper:#ffffff; --surface:#f4f7fb; --panel:#ffffff; --rail:#e9eef5; --line:#dbe3ee;
+    --ent:#0f7b55; --ent-bg:#e6f7ef; --ent-mark:#afe7ce;
+    --con:#c5332b; --con-bg:#ffebe8; --con-mark:#f4b9b3;
+    --neu:#92640f; --neu-bg:#fff2d8; --neu-mark:#ecd092;
+    --accent:#2563eb; --accent-bg:#eaf1ff;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --rad:8px; --maxw:1040px; --nav:286px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:
+    linear-gradient(90deg,rgba(219,227,238,.7) 1px,transparent 1px) 0 0/32px 32px,
+    linear-gradient(0deg,rgba(219,227,238,.55) 1px,transparent 1px) 0 0/32px 32px,
+    var(--surface);color:var(--ink);font-family:var(--sans);
+    font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .wrap{display:grid;grid-template-columns:var(--nav) minmax(0,1fr);align-items:start;gap:0;
+    max-width:1420px;margin:0 auto}
+  .nav{position:sticky;top:18px;height:calc(100vh - 36px);width:var(--nav);
+    background:rgba(255,255,255,.9);border:1px solid var(--line);overflow-y:auto;
+    padding:20px 18px;margin:18px 0 18px 18px;border-radius:var(--rad);
+    box-shadow:0 18px 55px rgba(46,64,92,.12);backdrop-filter:blur(10px)}
+  .main{min-width:0;max-width:var(--maxw);width:100%;margin:0 auto;padding:28px 30px 96px}
+  .brand{font-weight:850;font-size:20px;letter-spacing:.02em}
+  .brand .x{color:var(--accent)}
+  .vtag{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:11px;
+    color:var(--accent);background:var(--accent-bg);border:1px solid #bfd2ff;
+    padding:4px 9px;border-radius:999px;letter-spacing:.02em}
+  .nav h4{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-faint);
+    margin:24px 0 10px;font-weight:800}
+  .nav a{display:block;color:var(--ink-soft);text-decoration:none;font-size:13.5px;
+    padding:8px 10px 8px 12px;border-radius:7px;border-left:3px solid transparent;line-height:1.3}
+  .nav a:hover{background:var(--rail);color:var(--ink)}
+  .nav a.on{background:var(--accent-bg);color:var(--ink);border-left-color:var(--accent);font-weight:750}
+  .legend{margin-top:14px;display:grid;gap:8px}
+  .legend .row{display:grid;grid-template-columns:12px 1fr;align-items:start;gap:8px;font-size:12.5px;color:var(--ink-soft);
+    padding:8px 9px;background:#fff;border:1px solid var(--line);border-radius:7px}
+  .dot{width:11px;height:11px;border-radius:999px;flex:0 0 auto;margin-top:4px}
+  .hero{position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--rad);
+    padding:28px 30px;margin:0 0 18px;overflow:hidden;box-shadow:0 18px 55px rgba(46,64,92,.1)}
+  .hero:before{content:"";position:absolute;inset:0 0 auto;height:7px;background:linear-gradient(90deg,var(--ent),var(--accent),var(--con),var(--neu))}
+  .hero h1{font-size:34px;line-height:1.08;letter-spacing:-.02em;margin:0 0 9px}
+  .hero p{margin:0;color:var(--ink-soft);font-size:16px;max-width:68ch}
+  .pills{margin-top:18px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .pill{font-family:var(--mono);font-size:11.5px;padding:10px 11px;border-radius:7px;
+    border:1px solid var(--line);color:var(--ink-soft);background:#fbfdff;min-height:46px;display:flex;align-items:center}
+  .pill.k{color:var(--accent);border-color:#bfd2ff;background:var(--accent-bg);font-weight:700}
+  section{position:relative;padding:22px 0 0 36px;margin-top:18px;scroll-margin-top:18px}
+  section:before{content:"";position:absolute;left:12px;top:24px;bottom:-18px;width:2px;background:var(--line)}
+  section:after{content:"";position:absolute;left:5px;top:28px;width:16px;height:16px;border-radius:999px;background:#fff;
+    border:4px solid var(--accent);box-shadow:0 0 0 4px var(--accent-bg)}
+  section:last-of-type:before{bottom:12px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent);font-weight:800}
+  h2{font-size:23px;letter-spacing:-.01em;margin:4px 0 12px;line-height:1.2}
+  p.lead{margin:0 0 12px;color:var(--ink-soft)}
+  strong{font-weight:650;color:var(--ink)}
+  .rule{background:#fff;border:1px solid #bfd2ff;border-top:5px solid var(--accent);border-radius:var(--rad);
+    padding:18px 20px;margin:8px 0 4px;box-shadow:0 12px 30px rgba(37,99,235,.1)}
+  .rule .q{font-family:var(--mono);font-size:14px;color:var(--accent);margin-top:8px;
+    background:var(--accent-bg);border:1px solid #bfd2ff;border-radius:6px;padding:10px 12px;display:inline-block}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-weight:600;
+    font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px solid}
+  .badge.ent{color:var(--ent);background:var(--ent-bg);border-color:var(--ent-mark)}
+  .badge.con{color:var(--con);background:var(--con-bg);border-color:var(--con-mark)}
+  .badge.neu{color:var(--neu);background:var(--neu-bg);border-color:var(--neu-mark)}
+  .badge .b{width:8px;height:8px;border-radius:999px}
+  .badge.ent .b{background:var(--ent)} .badge.con .b{background:var(--con)} .badge.neu .b{background:var(--neu)}
+  .defs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+  .def{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:start;
+    border:1px solid var(--line);border-radius:var(--rad);padding:14px 15px;background:#fff;
+    box-shadow:0 6px 18px rgba(46,64,92,.06)}
+  .defs .def{grid-template-columns:1fr;align-content:start;min-height:150px}
+  .def .d{color:var(--ink-soft);font-size:14px}
+  .def .d b{color:var(--ink)}
+  .card{border:1px solid var(--line);border-radius:var(--rad);overflow:hidden;margin:16px 0;
+    background:#fff;box-shadow:0 16px 40px rgba(46,64,92,.1)}
+  .card .top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:13px 16px;border-bottom:1px solid var(--line);background:#fbfdff}
+  .card .ref{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft)}
+  .card .body{padding:16px}
+  .field{margin:0 0 12px}
+  .field:last-child{margin-bottom:0}
+  .flabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:5px}
+  .flabel .ex{color:#b08400;letter-spacing:.04em}
+  .statute{font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--ink);
+    background:#f8fbff;border:1px solid var(--line);border-left:5px solid var(--ink);
+    border-radius:6px;padding:11px 13px;white-space:normal}
+  .facts{font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--ink-soft);
+    background:#fff;border:1px dashed #b8c5d6;border-radius:6px;padding:11px 13px}
+  mark.span{padding:1px 2px;border-radius:3px;font-weight:600;color:var(--ink)}
+  mark.span.ent{background:var(--ent-mark);box-shadow:inset 0 -2px 0 var(--ent)}
+  mark.span.con{background:var(--con-mark);box-shadow:inset 0 -2px 0 var(--con)}
+  .why{display:flex;gap:9px;align-items:flex-start;margin-top:12px;padding-top:12px;
+    border-top:1px dotted var(--line);font-size:13.5px;color:var(--ink-soft);background:#fbfdff;
+    margin-left:-16px;margin-right:-16px;margin-bottom:-16px;padding:13px 16px 14px}
+  .why .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);flex:0 0 auto;margin-top:2px;font-weight:800}
+  .nospan{font-family:var(--mono);font-size:12px;color:var(--neu);background:var(--neu-bg);
+    border:1px solid var(--neu-mark);border-radius:6px;padding:8px 11px;display:inline-block}
+  .trap{border:1px solid var(--con-mark);border-left:4px solid var(--con);border-radius:var(--rad);
+    margin:16px 0;background:#fff;overflow:hidden;box-shadow:0 14px 34px rgba(197,51,43,.09)}
+  .trap .top{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--con-bg);
+    border-bottom:1px solid var(--con-mark)}
+  .trap.amber{border-color:var(--neu-mark);border-left-color:var(--neu)}
+  .trap.amber .top{background:var(--neu-bg);border-bottom-color:var(--neu-mark)}
+  .trap.amber{box-shadow:0 14px 34px rgba(146,100,15,.09)}
+  .trap .warn{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--con)}
+  .trap.amber .warn{color:var(--neu)}
+  .trap .title{font-size:14px;font-weight:650}
+  .trap .body{padding:16px}
+  .verdicts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  @media (max-width:560px){.verdicts{grid-template-columns:1fr}}
+  .vbox{border:1px solid var(--line);border-radius:6px;padding:11px 12px;background:#fff}
+  .vbox .h{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:6px}
+  .vbox.bad{background:#fcfafa}
+  .vbox.good{background:var(--ent-bg);border-color:var(--ent-mark)}
+  .strike{text-decoration:line-through;text-decoration-color:var(--con);color:var(--ink-soft)}
+  .check{list-style:none;padding:0;margin:8px 0 0}
+  .check li{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid var(--line);
+    border-bottom:none;font-size:14px;color:var(--ink-soft);background:#fff}
+  .check li:first-child{border-radius:var(--rad) var(--rad) 0 0}
+  .check li:last-child{border-radius:0 0 var(--rad) var(--rad)}
+  .check li:last-child{border-bottom:none}
+  .check .m{font-family:var(--mono);color:var(--accent);flex:0 0 auto;font-weight:800}
+  .foot{margin-top:42px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--ink-faint);font-family:var(--mono)}
+  @media (max-width:1020px){
+    .wrap{display:block}
+    .nav{position:static;height:auto;width:auto;border-right:none;
+      border-bottom:1px solid var(--line);padding:16px;margin:12px}
+    .nav h4:first-of-type{margin-top:18px}
+    .main{padding:24px 18px 80px}
+    .pills{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .defs{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+    body{font-size:14px;background:var(--surface)}
+    .main{padding:12px 12px 70px}
+    .hero{padding:24px 18px}
+    .hero h1{font-size:29px}
+    .pills{grid-template-columns:1fr}
+    section{padding-left:0}
+    section:before,section:after{display:none}
+    .def{grid-template-columns:1fr}
+    .card .top{align-items:flex-start;flex-direction:column}
+    .why{display:block}
+    .why .k{display:block;margin-bottom:5px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <aside class="nav">
+    <div class="brand">FLE<span class="x">X</span>ID</div>
+    <span class="vtag">guide v1.0 · STRICT</span>
+    <h4>Sections</h4>
+    <a href="#tache" class="nlink">Tâche</a>
+    <a href="#regle" class="nlink">Règle de lecture</a>
+    <a href="#labels" class="nlink">Les trois labels</a>
+    <a href="#or" class="nlink">Règle d’or</a>
+    <a href="#ex" class="nlink">Exemples résolus</a>
+    <a href="#pieges" class="nlink">Pièges à éviter</a>
+    <a href="#span" class="nlink">Le passage (span)</a>
+    <a href="#check" class="nlink">Avant de valider</a>
+    <h4>Labels</h4>
+    <div class="legend">
+      <div class="row"><span class="dot" style="background:var(--ent)"></span> entailment — le texte le rend vrai</div>
+      <div class="row"><span class="dot" style="background:var(--con)"></span> contradiction — le texte le rend faux</div>
+      <div class="row"><span class="dot" style="background:var(--neu)"></span> neutral — le texte n’en parle pas</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="hero">
+      <h1>Guide d’annotation</h1>
+      <p>Vous lisez un article et une situation de fait, puis vous donnez un label et le passage qui le justifie. Une seule consigne gouverne tout : <strong>juger d’après le texte affiché, et lui seul</strong>.</p>
+      <div class="pills">
+        <span class="pill k">lecture stricte</span>
+        <span class="pill">annotation en aveugle</span>
+        <span class="pill">3 labels</span>
+        <span class="pill">justification = un passage du texte</span>
+      </div>
+    </div>
+
+    <section id="tache">
+      <div class="eyebrow">01 — entrée / sortie</div>
+      <h2>Tâche</h2>
+      <p class="lead">Pour chaque item, on vous montre deux blocs et vous produisez deux choses.</p>
+      <div class="def"><div class="d"><b>Prémisse</b><br><span style="font-size:12.5px">on vous la donne</span></div><div class="d">Le texte d’un <b>article</b> du Code civil.</div></div>
+      <div class="def" style="margin-top:10px"><div class="d"><b>Hypothèse</b><br><span style="font-size:12.5px">on vous la donne</span></div><div class="d">Une <b>situation de fait</b> décrite en quelques phrases.</div></div>
+      <div class="def" style="margin-top:10px"><div class="d"><b>Votre sortie</b></div><div class="d">(a) un <b>label</b> parmi trois ;&nbsp; (b) le <b>passage de l’article</b> qui justifie ce label.</div></div>
+    </section>
+
+    <section id="regle">
+      <div class="eyebrow">02 — la plus importante</div>
+      <h2>Règle de lecture</h2>
+      <div class="rule">
+        <p style="margin:0"><strong>Jugez uniquement d’après le texte de l’article affiché.</strong> N’utilisez ni jurisprudence, ni doctrine, ni un autre article, ni vos connaissances juridiques extérieures.</p>
+        <div class="q">le texte affiché, à lui seul, tranche-t-il ?&nbsp;&nbsp;→ si non, c’est <b>neutral</b></div>
+      </div>
+      <p class="lead" style="margin-top:12px">C’est contre-intuitif pour un juriste : votre réflexe est de mobiliser le droit. Ici, on vous demande de <strong>suspendre ce réflexe</strong> et de rester collé au texte.</p>
+    </section>
+
+    <section id="labels">
+      <div class="eyebrow">03 — définitions</div>
+      <h2>Les trois labels</h2>
+      <div class="defs">
+        <div class="def">
+          <div><span class="badge ent"><span class="b"></span>entailment</span></div>
+          <div class="d">La conclusion de la situation ou la situation <b>découle</b> du texte. Le texte la rend <b>vraie</b>.</div>
+        </div>
+        <div class="def">
+          <div><span class="badge con"><span class="b"></span>contradiction</span></div>
+          <div class="d">La situation <b>nie ou contourne une condition explicite</b> du texte. Le texte la rend <b>fausse</b>.</div>
+        </div>
+        <div class="def">
+          <div><span class="badge neu"><span class="b"></span>neutral</span></div>
+          <div class="d">Le texte <b>ne traite pas</b> de la question posée. Rien dans le texte ne permet de trancher ou l'hypothèse apporte des informations ou contraintes qui ne s'opposent ni ne soutiennent  la premise</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="or">
+      <div class="eyebrow">04 — la frontière difficile</div>
+      <h2>Règle d’or : neutral ou contradiction ?</h2>
+      <p class="lead">La quasi-totalité des désaccords se joue ici. Deux repères, et un test.</p>
+      <div class="def"><div class="d"><span class="badge con" style="font-size:10.5px"><span class="b"></span>contradiction</span></div><div class="d">La situation nie / contourne une condition <b>écrite dans le texte</b>.</div></div>
+      <div class="def" style="margin-top:10px"><div class="d"><span class="badge neu" style="font-size:10.5px"><span class="b"></span>neutral</span></div><div class="d">La situation porte sur ce que le texte <b>n’aborde pas</b> : effet sur un tiers, procédure, preuve, date d’effet, une condition supplémentaire non mentionnée. Ou même s'il l'aborde, elle ajoute des contraintes qui ne s'opposent  ni  soutiennent pas la premise</div></div>
+      <div class="rule" style="margin-top:14px">
+        <div class="eyebrow" style="color:var(--accent)">Test rapide</div>
+        <p style="margin:8px 0 0"><span style="font-family:var(--mono);font-size:13px">« X suffit à lui seul »</span> alors que le texte exige X comme condition → <strong style="color:var(--con)">contradiction</strong>.</p>
+        <p style="margin:6px 0 0"><span style="font-family:var(--mono);font-size:13px">« Une condition Y peut être exigée en plus »</span> alors que le texte ne parle pas de Y → <strong style="color:var(--neu)">neutral</strong>.</p>
+      </div>
+    </section>
+
+    <section id="ex">
+      <div class="eyebrow">05 — un cas net par label</div>
+      <h2>Exemples résolus</h2>
+      <p class="lead">Tirés des items déjà construits. Le passage surligné est, en couleur du label, le fragment qui justifie la décision.</p>
+
+      <div class="card">
+        <div class="top"><span class="ref">art. 21-24-1 · dispense de langue</span><span class="badge ent"><span class="b"></span>entailment</span></div>
+        <div class="body">
+          <div class="field"><div class="flabel">Prémisse</div>
+            <div class="statute">La condition de connaissance de la langue française <mark class="span ent">ne s’applique pas aux réfugiés politiques et apatrides résidant régulièrement et habituellement en France depuis quinze années au moins et âgés de plus de soixante-dix ans</mark>.</div>
+          </div>
+          <div class="field"><div class="flabel">Hypothèse</div>
+            <div class="facts">Awali est un réfugié politique. Il réside régulièrement et habituellement en France depuis dix-huit ans et il est âgé de soixante-douze ans. On ne saurait lui opposer son défaut de maîtrise du français pour refuser sa demande.</div>
+          </div>
+          <div class="why"><span class="k">pourquoi</span><span>Les <b>trois</b> conditions de la dispense sont réunies (réfugié ; résidence régulière &gt; 15 ans ; &gt; 70 ans). La conclusion « on ne peut lui opposer la langue » <b>découle</b> du texte.</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="ref">art. 16-1 · corps hors du patrimoine</span><span class="badge con"><span class="b"></span>contradiction</span></div>
+        <div class="body">
+          <div class="field"><div class="flabel">Prémisse</div>
+            <div class="statute">Chacun a droit au respect de son corps. Le corps humain est inviolable. <mark class="span con">Le corps humain, ses éléments et ses produits ne peuvent faire l’objet d’un droit patrimonial.</mark></div>
+          </div>
+          <div class="field"><div class="flabel">Hypothèse</div>
+            <div class="facts">Se prévalant d’une autorisation administrative, une clinique traite les éléments du corps d’un patient comme un bien patrimonial qu’elle peut vendre.</div>
+          </div>
+          <div class="why"><span class="k">pourquoi</span><span>Le texte exclut tout <b>droit patrimonial</b> sur le corps et ses éléments. Les traiter comme un bien vendable contredit une règle explicite — et l’autorisation administrative n’y change rien, car le texte ne prévoit <b>aucune exception</b>.</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="ref">art. 21-25-1 · délai de réponse</span><span class="badge neu"><span class="b"></span>neutral</span></div>
+        <div class="body">
+          <div class="field"><div class="flabel">Prémisse <span class="ex">· extrait</span></div>
+            <div class="statute">La réponse de l’autorité publique à une demande de naturalisation doit intervenir au plus tard dix-huit mois à compter de la remise du dossier complet. […] Le délai est réduit à douze mois lorsque l’étranger justifie d’au moins dix ans de résidence habituelle. Les délais peuvent être prolongés une fois, pour trois mois.</div>
+          </div>
+          <div class="field"><div class="flabel">Hypothèse</div>
+            <div class="facts">Hamza a déposé son dossier complet. L’autorité lui répond dans le délai imparti par une décision de refus, motivée par l’insuffisance de ses ressources financières.</div>
+          </div>
+          <div class="field"><div class="flabel">Passage</div><span class="nospan">aucun passage — le label est neutral</span></div>
+          <div class="why"><span class="k">pourquoi</span><span>Le texte règle le <b>délai</b> de réponse, pas les <b>motifs</b> de refus. Il ne dit rien des ressources financières → on ne peut pas trancher la validité de ce refus à partir du texte.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pieges">
+      <div class="eyebrow">06 — vu lors du test à blanc</div>
+      <h2>Pièges à éviter</h2>
+      <p class="lead">Ces deux cas sont précisément ceux où la lecture stricte est trahie. Lisez-les attentivement.</p>
+
+      <div class="trap">
+        <div class="top"><span class="warn">⚠ piège</span><span class="title">Personne hors du champ du texte</span></div>
+        <div class="body">
+          <div class="field"><div class="flabel">Prémisse — art. 11</div>
+            <div class="statute">L’étranger jouira en France des mêmes droits civils que ceux qui sont ou seront accordés aux Français par les traités de la nation à laquelle cet étranger appartiendra.</div>
+          </div>
+          <div class="field"><div class="flabel">Hypothèse</div>
+            <div class="facts">Un traité accorde aux ressortissants du pays de Liang la liberté d’exercer un commerce en France. Liang, <b>devenu Français par naturalisation</b>, invoque ce même traité pour fonder ses propres droits civils.</div>
+          </div>
+          <div class="verdicts">
+            <div class="vbox bad"><div class="h">ce qu’on pourrait croire</div><span class="strike">contradiction</span><div style="font-size:12.5px;margin-top:5px;color:var(--ink-faint)">« Liang n’est plus étranger, il n’a plus à invoquer le traité. »</div></div>
+            <div class="vbox good"><div class="h">la bonne réponse (strict)</div><span class="badge neu"><span class="b"></span>neutral</span></div>
+          </div>
+          <div class="why"><span class="k">pourquoi</span><span>Le texte régit <b>« l’étranger »</b>. Il ne dit <b>rien</b> de quelqu’un devenu français. Conclure « contradiction » suppose une règle extérieure (« une fois français, c’est un autre régime ») — <b>c’est sortir du texte</b>. Le texte seul ne tranche pas.</span></div>
+        </div>
+      </div>
+
+      <div class="trap amber">
+        <div class="top"><span class="warn">⚠ piège</span><span class="title">Reformulation ≠ inférence</span></div>
+        <div class="body">
+          <div class="field"><div class="flabel">Prémisse — art. 9-1 <span class="ex">· extrait</span></div>
+            <div class="statute">Chacun a droit au respect de la présomption d’innocence. Lorsqu’une personne est, avant toute condamnation, présentée publiquement comme coupable de faits faisant l’objet d’une enquête, le juge peut prescrire toutes mesures aux fins de faire cesser l’atteinte.</div>
+          </div>
+          <div class="field"><div class="flabel">Hypothèse</div>
+            <div class="facts">Sophie fait l’objet d’une instruction judiciaire et n’a pas encore été jugée. <b>Elle bénéficie du droit au respect de la présomption d’innocence.</b></div>
+          </div>
+          <div class="verdicts">
+            <div class="vbox bad"><div class="h">le réflexe</div><span class="strike">entailment d’office</span></div>
+            <div class="vbox good" style="background:var(--neu-bg);border-color:var(--neu-mark)"><div class="h">geste attendu</div><span style="font-family:var(--mono);font-weight:600;color:var(--neu);font-size:13px">cocher « problématique »</span></div>
+          </div>
+          <div class="why"><span class="k">pourquoi</span><span>L’hypothèse <b>recopie</b> quasi mot pour mot la première phrase du texte. Ce n’est pas une inférence, c’est une redite : l’item ne <b>teste</b> rien. Signalez-le plutôt que de le marquer entailment automatiquement.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="span">
+      <div class="eyebrow">07 — la justification</div>
+      <h2>Le passage (span)</h2>
+      <p class="lead">Surlignez le <strong>fragment le plus court</strong> du texte qui suffit à justifier votre label — pas la phrase entière si une partie suffit.</p>
+      <ul class="check">
+        <li><span class="m">→</span><span>Choisissez le fragment qui correspond <b>le plus directement</b> à l’hypothèse ; s’il en existe plusieurs valides, le plus précis.</span></li>
+        <li><span class="m">→</span><span>Label <b style="color:var(--neu)">neutral</b> → <b>aucun passage</b> (le texte ne justifie rien).</span></li>
+      </ul>
+    </section>
+
+    <section id="check">
+      <div class="eyebrow">08 — réflexe final</div>
+      <h2>Avant de valider chaque item</h2>
+      <ul class="check">
+        <li><span class="m">1.</span><span>Ai-je jugé <b>uniquement</b> sur le texte affiché, sans mobiliser de droit extérieur ?</span></li>
+        <li><span class="m">2.</span><span>Si j’hésite entre neutral et contradiction : la situation nie-t-elle une condition <b>écrite</b> (contradiction) ou parle-t-elle d’un point <b>absent</b> du texte (neutral) ?</span></li>
+        <li><span class="m">3.</span><span>Mon passage est-il le <b>fragment minimal</b> ? (vide si neutral)</span></li>
+        <li><span class="m">4.</span><span>L’hypothèse est-elle ambiguë ou une simple redite ? → <b>problématique</b>.</span></li>
+        <li><span class="m">5.</span><span>Si « en droit » je trancherais autrement, l’ai-je <b>noté en une phrase</b> dans la justification ?</span></li>
+      </ul>
+      <p class="lead" style="margin-top:14px">Un cas non couvert par ce guide : <strong>ne tranchez pas au hasard</strong>, signalez-le.</p>
+    </section>
+
+    <div class="foot">FLEXID · guide d’annotation v1.0 · lecture stricte · document de travail, susceptible d’évoluer après la première session</div>
+
+  </main>
+</div>
+
+<script>
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nlink'));
+  var ids = links.map(function(a){return a.getAttribute('href').slice(1);});
+  var secs = ids.map(function(id){return document.getElementById(id);});
+  function onScroll(){
+    var y = window.scrollY + 90, idx = 0;
+    for (var i=0;i<secs.length;i++){ if(secs[i] && secs[i].offsetTop <= y) idx = i; }
+    links.forEach(function(a,i){ a.classList.toggle('on', i===idx); });
+  }
+  document.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('load', onScroll);
+</script>
+</body>
+</html>

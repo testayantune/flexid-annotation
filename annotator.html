@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLEXID — Annotation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1F2EC;        /* vellum background */
+    --paper-card:#FBFAF6;   /* lifted surface */
+    --ink:#1C2430;
+    --ink-soft:#5B6472;
+    --rule:#DCD8CC;
+    --accent:#7A1F2B;       /* "Dalloz red" — French civil code binding */
+    --accent-dark:#5E1620;
+    --accent-soft:#F3E2E0;
+    --ent:#2F6B4F; --ent-soft:#E4EEE7;
+    --con:#A33A1C; --con-soft:#F7E7DD;
+    --neu:#7C5C12; --neu-soft:#F3ECDA;
+    --select-hl:#F1D98A;
+    --font-display:'Newsreader',serif;
+    --font-body:'IBM Plex Sans',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--font-body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .stage{max-width:1000px;margin:0 auto;padding:0 18px 90px}
+
+  /* ---------- stepper ---------- */
+  .stepper{display:flex;justify-content:center;align-items:center;gap:10px;
+    padding:28px 0 30px;font-family:var(--font-mono);font-size:11px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--ink-soft)}
+  .stepper .sep{opacity:.35}
+  .stepper .step{padding-bottom:3px;border-bottom:2px solid transparent}
+  .stepper .step.active{color:var(--accent);font-weight:600;border-color:var(--accent)}
+
+  /* ---------- screens / panels ---------- */
+  .screen{animation:riseIn .5s ease both}
+  @media (prefers-reduced-motion:reduce){.screen{animation:none}}
+  @keyframes riseIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .hide{display:none!important}
+  .panel{background:var(--paper-card);border:1px solid var(--rule);border-radius:18px;
+    padding:38px 36px;box-shadow:0 1px 2px rgba(28,36,48,.04),0 22px 40px -30px rgba(28,36,48,.22)}
+  .panel-narrow{max-width:580px;margin:0 auto}
+  .panel-wide{max-width:880px;margin:0 auto}
+  @media (max-width:600px){.panel{padding:26px 20px;border-radius:14px}}
+
+  .eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 8px;font-weight:600}
+  h1.display{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.2vw,32px);
+    letter-spacing:-.01em;margin:0 0 12px;color:var(--ink)}
+  .lead{color:var(--ink-soft);font-size:15px;line-height:1.65;margin:0 0 26px}
+
+  /* ---------- form basics ---------- */
+  label.fld{display:block;font-size:13px;font-weight:600;margin-bottom:7px;color:var(--ink)}
+  input[type=text],textarea{width:100%;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;
+    font-size:15px;font-family:var(--font-body);background:#fff;color:var(--ink)}
+  input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  input:disabled{opacity:.55}
+  .hint{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0}
+  .fldgroup{margin-bottom:20px}
+  .msg{font-size:13px;min-height:18px;margin-top:10px}
+  .msg.ok{color:var(--ent)} .msg.warn{color:var(--con)}
+
+  /* ---------- buttons ---------- */
+  .btn{appearance:none;border:1px solid var(--rule);background:#fff;color:var(--ink);
+    padding:12px 22px;border-radius:10px;font-size:14.5px;font-weight:600;cursor:pointer;
+    font-family:var(--font-body);transition:.14s ease}
+  .btn:hover{border-color:#c7c2b4}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--ink-soft)}
+  .btn-ghost:hover{border-color:var(--ink-soft);color:var(--ink)}
+  .btn-block{width:100%;display:block;text-align:center;margin-top:20px}
+
+  /* ---------- pledge ---------- */
+  .pledge-bilingual{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:6px 0 24px}
+  @media (max-width:600px){.pledge-bilingual{grid-template-columns:1fr}}
+  .pledge-lang{background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:18px 20px}
+  .lang-tag{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 9px;font-weight:600}
+  .pledge-text{font-family:var(--font-display);font-size:15.5px;line-height:1.68;margin:0;color:var(--ink)}
+  .pledge-check{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink);
+    margin-top:6px;cursor:pointer}
+  .pledge-check input{margin-top:3px;width:17px;height:17px;accent-color:var(--accent);flex-shrink:0}
+
+  /* ---------- identification ---------- */
+  .local-notice{background:var(--ent-soft);border:1px solid #c7ddcd;color:#1d4a35;border-radius:10px;
+    padding:12px 14px;font-size:13.5px;margin:14px 0}
+  .resume-block{margin:16px 0 4px;padding-top:16px;border-top:1px dashed var(--rule)}
+
+  /* ---------- annotation workspace ---------- */
+  .workhead{margin-bottom:22px}
+  .workhead-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .codepill{font-family:var(--font-mono);font-size:12px;background:var(--accent-soft);color:var(--accent);
+    padding:5px 12px;border-radius:999px;font-weight:600}
+  .counts{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft)}
+  .counts b{color:var(--ink);font-weight:600}
+  .progress-track{height:6px;border-radius:999px;background:var(--rule);overflow:hidden;margin-top:12px}
+  .progress-fill{height:100%;background:var(--accent);border-radius:999px;width:0;transition:width .4s ease}
+
+  .cardblock{background:var(--paper-card);border:1px solid var(--rule);border-radius:16px;
+    padding:26px 28px;margin-bottom:18px;box-shadow:0 1px 2px rgba(28,36,48,.04)}
+  @media (max-width:600px){.cardblock{padding:18px 18px}}
+  .eyebrow-row{display:flex;align-items:baseline;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+  .sectionmark{font-family:var(--font-display);font-size:18px;color:var(--accent);font-weight:600}
+  .lawref-pill{font-family:var(--font-mono);font-size:11.5px;background:var(--accent-soft);color:var(--accent);
+    padding:3px 11px;border-radius:999px;font-weight:600;margin-left:auto;letter-spacing:.01em}
+  .eyebrow-sub{font-family:var(--font-body);text-transform:none;letter-spacing:0;opacity:.6;font-size:11.5px;color:var(--ink-soft)}
+
+  .premise{font-family:var(--font-display);font-size:clamp(16px,1.7vw,18.5px);line-height:1.85;
+    color:var(--ink);white-space:pre-wrap;user-select:text;cursor:text;
+    border-left:3px solid var(--accent);padding:4px 0 4px 20px}
+  .premise.lock{opacity:.5;cursor:not-allowed}
+  .premise .ch{border-radius:2px}
+  .premise .sel{background:var(--select-hl);box-shadow:inset 0 -2px 0 0 rgba(28,36,48,.35)}
+
+  .hyp{font-family:var(--font-body);font-size:15.5px;line-height:1.75;color:var(--ink);
+    border-left:3px solid var(--ink-soft);padding:4px 0 4px 20px}
+
+  .labels{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:2px}
+  @media (max-width:640px){.labels{grid-template-columns:1fr}}
+  .lab{border:1.5px solid var(--rule);border-radius:14px;padding:18px;cursor:pointer;text-align:left;
+    background:#fff;transition:.14s ease;display:flex;flex-direction:column;gap:6px}
+  .lab:hover{border-color:#c7c2b4;transform:translateY(-1px)}
+  @media (prefers-reduced-motion:reduce){.lab:hover{transform:none}}
+  .lab-glyph{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+    border-radius:50%;border:1.5px solid var(--rule);font-family:var(--font-mono);font-weight:600;
+    color:var(--ink-soft);font-size:14px;background:#fff}
+  .lab b{font-size:14.5px;font-family:var(--font-body)}
+  .lab small{display:block;color:var(--ink-soft);font-weight:400;font-size:12.5px;line-height:1.4}
+  .lab.sel-ent{border-color:var(--ent);background:var(--ent-soft)}
+  .lab.sel-ent .lab-glyph{background:var(--ent);border-color:var(--ent);color:#fff}
+  .lab.sel-con{border-color:var(--con);background:var(--con-soft)}
+  .lab.sel-con .lab-glyph{background:var(--con);border-color:var(--con);color:#fff}
+  .lab.sel-neu{border-color:var(--neu);background:var(--neu-soft)}
+  .lab.sel-neu .lab-glyph{background:var(--neu);border-color:var(--neu);color:#fff}
+
+  .spanbox{margin-top:18px}
+  .spanread{margin-top:8px;background:#fff;border:1px solid var(--rule);border-radius:10px;
+    padding:10px 13px;min-height:40px;font-size:14px;color:var(--ink);font-family:var(--font-body)}
+  .spanread .empty{color:var(--ink-soft);font-style:italic}
+  .spanoffsets{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft)}
+
+  .chk{display:flex;align-items:flex-start;gap:9px;margin-top:18px;font-size:13.5px;color:var(--ink)}
+  .chk input{margin-top:3px;accent-color:var(--accent)}
+
+  .actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap}
+  .numberbox{background:var(--accent-soft);border:1px solid #e2c3c0;border-radius:10px;
+    padding:12px 16px;font-size:14px;margin-top:14px;color:var(--ink)}
+  .numberbox b{font-family:var(--font-mono);font-size:17px;color:var(--accent)}
+  .footnote{font-size:12.5px;color:var(--ink-soft);text-align:center;margin:10px 0 0}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+  .center{text-align:center}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="stepper" id="stepper">
+    <span class="step" data-step="pledge">Engagement</span>
+    <span class="sep">—</span>
+    <span class="step" data-step="id">Identification</span>
+    <span class="sep">—</span>
+    <span class="step" data-step="annotate">Annotation</span>
+  </div>
+
+  <!-- ====== STEP 1 — PLEDGE ====== -->
+  <section id="pledge" class="screen hide">
+    <div class="panel panel-narrow">
+      <p class="eyebrow">FLEXID · droit civil français</p>
+      <h1 class="display">Engagement d'intégrité</h1>
+      <p class="lead">Avant de commencer, lisez et acceptez l'engagement ci-dessous.</p>
+
+      <div class="pledge-bilingual">
+        <div class="pledge-lang">
+          <p class="lang-tag">Français</p>
+          <p class="pledge-text">Je m'engage à réaliser cette annotation par mon seul jugement, sans recourir à une intelligence artificielle générative ni à une recherche externe. Les sessions sont enregistrées (durée par item, sorties de fenêtre) et les réponses incohérentes sont écartées de l'analyse.</p>
+        </div>
+        <div class="pledge-lang">
+          <p class="lang-tag">English</p>
+          <p class="pledge-text">I commit to completing this annotation using my own judgment alone, without resorting to generative artificial intelligence or external research. Sessions are recorded (time per item, window focus loss) and inconsistent responses are excluded from the analysis.</p>
+        </div>
+      </div>
+
+      <label class="pledge-check">
+        <input type="checkbox" id="pledgeCheck">
+        <span>Je prends cet engagement. / I make this commitment.</span>
+      </label>
+
+      <button class="btn btn-primary btn-block" id="pledgeBtn" type="button" disabled>Continuer</button>
+    </div>
+  </section>
+
+  <!-- ====== STEP 2 — IDENTIFICATION ====== -->
+  <section id="login" class="screen hide">
+    <div class="panel panel-narrow">
+      <p class="eyebrow">Étape 2</p>
+      <h1 class="display">Identification</h1>
+      <p class="lead">Indiquez le dossier contenant les lots, puis le nom du fichier lot.</p>
+
+      <div class="fldgroup">
+        <label class="fld" for="code">Dossier / fichier</label>
+        <input type="text" id="code" placeholder="ex. flexid_part_one_340\lot1" autocomplete="off">
+      </div>
+
+      <div id="localNotice" class="local-notice hide"></div>
+
+      <div id="resumeBlock" class="resume-block hide">
+        <label class="fld" for="resumeCount">Combien d'instances avez-vous déjà validées dans ce lot (sur un autre appareil) ?</label>
+        <input type="text" id="resumeCount" inputmode="numeric" placeholder="0">
+        <p class="hint">Indiquez 0 si c'est votre première session avec ce lot.</p>
+      </div>
+
+      <div id="codeMsg" class="msg"></div>
+      <button class="btn btn-primary btn-block" id="startBtn" type="button">Commencer l'annotation</button>
+    </div>
+  </section>
+
+  <!-- ====== STEP 3 — ANNOTATION ====== -->
+  <section id="annot" class="screen hide">
+    <div class="panel-wide">
+      <div class="workhead">
+        <div class="workhead-row">
+          <span class="codepill" id="mCode"></span>
+          <span class="counts"><b id="mDone">0</b> / <span id="mTotal">0</span> annotées · <span id="mLeft">0</span> restantes</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="cardblock">
+        <div class="eyebrow-row">
+          <span class="sectionmark">§</span>
+          <p class="eyebrow" style="margin:0">Texte de loi <span class="eyebrow-sub">prémisse</span></p>
+          <span class="lawref-pill hide" id="lawRef"></span>
+        </div>
+        <div id="premise" class="premise"></div>
+      </div>
+
+      <div class="cardblock">
+        <div class="eyebrow-row">
+          <p class="eyebrow" style="margin:0">Situation à évaluer <span class="eyebrow-sub">hypothèse</span></p>
+        </div>
+        <textarea id="hyp" class="hyp" rows="3" aria-label="Hypothèse modifiable"></textarea>
+        <p class="hint">Vous pouvez modifier l'hypothèse si nécessaire avant de valider.</p>
+      </div>
+
+      <div class="cardblock">
+        <p class="eyebrow">Votre décision</p>
+        <div class="labels">
+          <div class="lab" data-l="entailment">
+            <span class="lab-glyph">✓</span>
+            <b>Entailment</b>
+            <small>La situation est juridiquement établie au regard de la prémisse.</small>
+          </div>
+          <div class="lab" data-l="contradiction">
+            <span class="lab-glyph">✕</span>
+            <b>Contradiction</b>
+            <small>La situation est incompatible avec la prémisse.</small>
+          </div>
+          <div class="lab" data-l="neutral">
+            <span class="lab-glyph">–</span>
+            <b>Neutral</b>
+            <small>La prémisse seule ne suffit pas à trancher.</small>
+          </div>
+        </div>
+
+        <div class="spanbox" id="spanbox">
+          <label class="fld" style="margin-top:4px">Fragment justificatif — sélectionnez dans la prémisse le passage minimal qui fonde votre choix</label>
+          <div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-ghost" id="clearSpan" type="button">Effacer la sélection</button>
+            <span class="spanoffsets" id="spanOffsets"></span>
+          </div>
+          <div class="spanread" id="spanRead"><span class="empty">Aucune sélection.</span></div>
+        </div>
+
+        <label class="chk">
+          <input type="checkbox" id="problematic">
+          <span>Instance <b>mal posée / ambiguë</b> (choisissez tout de même le label le plus proche, puis cochez ceci).</span>
+        </label>
+
+        <div class="fldgroup" style="margin-top:18px">
+          <label class="fld" for="just">Justification en une phrase — facultatif</label>
+          <textarea id="just" rows="2" placeholder="Pourquoi ce choix ?"></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="submitBtn">Valider et suivant</button>
+          <button class="btn btn-ghost" id="dlBtn" type="button">Terminer et télécharger mon annotation</button>
+        </div>
+        <div id="formMsg" class="msg warn"></div>
+        <div id="dlNumber" class="numberbox hide"></div>
+      </div>
+
+      <p class="footnote">Votre progression est sauvegardée automatiquement sur cet appareil. En cas de changement d'appareil, cliquez sur « Terminer et télécharger mon annotation » pour télécharger votre fichier et obtenir le numéro de reprise.</p>
+    </div>
+  </section>
+
+  <!-- ====== DONE ====== -->
+  <section id="done" class="screen hide">
+    <div class="panel panel-narrow center">
+      <span class="pill">Terminé</span>
+      <h1 class="display" style="margin-top:16px">Toutes vos instances sont annotées</h1>
+      <p class="lead">Téléchargez votre fichier et transmettez-le au responsable (avec vos fichiers précédents si vous avez travaillé sur plusieurs appareils).</p>
+      <button class="btn btn-primary" id="dlBtn2" type="button">Télécharger mon fichier (.jsonl)</button>
+      <div id="dlNumber2" class="numberbox hide" style="text-align:left"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+
+const S = {
+  code:"", instances:null, offset:0,
+  annotated:{},
+  queue:[],
+  cur:null, start:null, end:null, text:"",
+  label:null, itemStart:0, focusLost:0
+};
+
+/* ---------- helpers ---------- */
+const nfc = s => s.normalize("NFC");
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const lsKey = code => "flexid_annot_"+code;
+const PLEDGE_KEY = "flexid_pledge_ok";
+const LEGACY_LOT_BASE_DIR = "shuffled_and_batches";
+
+function persist(){ try{ localStorage.setItem(lsKey(S.code), JSON.stringify({offset:S.offset, annotations:S.annotated})); }catch(e){} }
+function loadLocal(code){
+  try{
+    const r=localStorage.getItem(lsKey(code));
+    if(r){ const o=JSON.parse(r); if(o && typeof o==="object") return {offset:o.offset||0, annotations:o.annotations||{}}; }
+  }catch(e){}
+  return null;
+}
+function pledgeAccepted(){ try{ return localStorage.getItem(PLEDGE_KEY)==="1"; }catch(e){ return false; } }
+function setPledgeAccepted(){ try{ localStorage.setItem(PLEDGE_KEY,"1"); }catch(e){} }
+
+/* ---------- screen / stepper management ---------- */
+function setStep(name){
+  document.querySelectorAll('.stepper .step').forEach(el=>{
+    el.classList.toggle('active', el.dataset.step===name);
+  });
+}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.add('hide'));
+  $('#'+id).classList.remove('hide');
+  const stepMap = {pledge:'pledge', login:'id', annot:'annotate', done:'annotate'};
+  setStep(stepMap[id] || '');
+}
+
+/* ---------- file loading ---------- */
+async function tryFetch(path){ try{const r=await fetch(path,{cache:"no-store"});if(r.ok)return await r.text();}catch(e){} return null; }
+
+function parseInstancesPayload(txt, isJsonl){
+  if(isJsonl){
+    return txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>JSON.parse(l));
+  }
+  return JSON.parse(txt);
+}
+
+function setInstances(arr){
+  S.instances = arr.map(o=>({id:String(o.id), premise:nfc(String(o.premise||"")), hypothesis_facts:nfc(String(o.hypothesis_facts||o.hypothesis||"")), law_ref:String(o.law_ref||"")}))
+                   .filter(o=>o.id && o.premise && o.hypothesis_facts);
+}
+
+function parseLotLocation(value){
+  let raw = value.trim().replace(/\\/g,"/").replace(/^\.?\//,"").replace(/\/+/g,"/");
+  if(raw.toLowerCase().startsWith((LEGACY_LOT_BASE_DIR+"/").toLowerCase())){
+    raw = raw.slice(LEGACY_LOT_BASE_DIR.length+1);
+  }
+  raw = raw.replace(/\.jsonl$/i,"").replace(/\.json$/i,"");
+  const parts = raw.split("/");
+  if(parts.length !== 2) return null;
+  const folder = parts[0], file = parts[1];
+  if(!/^[A-Za-z0-9._-]+$/.test(folder) || !/^[A-Za-z0-9._-]+$/.test(file)) return null;
+  if(folder.includes("..") || file.includes("..")) return null;
+  return {
+    folder,
+    file,
+    id: folder+"/"+file,
+    jsonlPath: folder+"/"+file+".jsonl",
+    jsonPath: folder+"/"+file+".json"
+  };
+}
+
+async function loadInstancesForCode(code){
+  const location = parseLotLocation(code);
+  if(!location) return false;
+  let txt = await tryFetch(location.jsonlPath);
+  let isJsonl = true;
+  if(!txt){ txt = await tryFetch(location.jsonPath); isJsonl = false; }
+  if(!txt) return false;
+  try{
+    setInstances(parseInstancesPayload(txt, isJsonl));
+    S.code = location.id;
+    return !!(S.instances && S.instances.length);
+  }catch(e){ return false; }
+}
+
+/* ---------- identification screen behaviour ---------- */
+function showCodeMsg(text, warn){
+  const el = $("#codeMsg");
+  el.textContent = text;
+  el.className = "msg " + (warn ? "warn" : "ok");
+}
+function refreshIdentUI(){
+  const raw = $("#code").value.trim();
+  const location = parseLotLocation(raw);
+  const resumeBlock = $("#resumeBlock"), localNotice = $("#localNotice");
+  if(!raw || !location){ resumeBlock.classList.add("hide"); localNotice.classList.add("hide"); return; }
+  const local = loadLocal(location.id);
+  if(local){
+    resumeBlock.classList.add("hide");
+    const total = (local.offset||0) + Object.keys(local.annotations||{}).length;
+    localNotice.textContent = "Reprise automatique : "+total+" instance(s) déjà enregistrée(s) sur cet appareil pour ce lot.";
+    localNotice.classList.remove("hide");
+  } else {
+    localNotice.classList.add("hide");
+    resumeBlock.classList.remove("hide");
+  }
+}
+
+async function attemptStart(){
+  const code = $("#code").value.trim();
+  if(!code){ showCodeMsg("Veuillez saisir le dossier et le lot.", true); return; }
+  $("#startBtn").disabled = true; $("#code").disabled = true;
+  showCodeMsg("Vérification…", false);
+  const ok = await loadInstancesForCode(code);
+  if(!ok){
+    showCodeMsg("Fichier introuvable. Exemple : flexid_part_one_340\\lot1 cherche flexid_part_one_340/lot1.jsonl.", true);
+    $("#startBtn").disabled = false; $("#code").disabled = false;
+    return;
+  }
+  const local = loadLocal(S.code);
+  if(local){
+    S.offset = Math.min(local.offset || 0, S.instances.length);
+    S.annotated = local.annotations || {};
+  } else {
+    let n = parseInt(($("#resumeCount").value || "0").trim(), 10);
+    if(isNaN(n) || n < 0) n = 0;
+    if(n > S.instances.length) n = S.instances.length;
+    S.offset = n;
+    S.annotated = {};
+    persist();
+  }
+  startSession();
+}
+
+/* ---------- session ---------- */
+function startSession(){
+  S.queue = S.instances.slice(S.offset).filter(o=>!S.annotated[o.id]);
+  $("#code").disabled = false; $("#startBtn").disabled = false;
+  showScreen('annot');
+  $("#mCode").textContent = S.code;
+  $("#mTotal").textContent = S.instances.length;
+  updateCounts();
+  nextItem();
+}
+function updateCounts(){
+  const done = S.offset + Object.keys(S.annotated).length;
+  $("#mDone").textContent = done;
+  $("#mLeft").textContent = S.instances.length - done;
+  const pct = S.instances.length ? Math.round((done/S.instances.length)*100) : 0;
+  $("#progressFill").style.width = pct+"%";
+}
+
+/* ---------- render one item ---------- */
+function renderPremise(text){
+  const box=$("#premise"); box.classList.remove("lock");
+  box.innerHTML = [...text].map((c,i)=>'<span class="ch" data-i="'+i+'">'+esc(c)+'</span>').join("");
+}
+function nextItem(){
+  if(S.queue.length===0){ showScreen('done'); return; }
+  S.cur = S.queue.shift();
+  S.start=null; S.end=null; S.text=""; S.label=null; S.focusLost=0; S.itemStart=Date.now();
+  $("#hyp").value = S.cur.hypothesis_facts;
+  renderPremise(S.cur.premise);
+  if(S.cur.law_ref){ $("#lawRef").textContent = S.cur.law_ref; $("#lawRef").classList.remove("hide"); }
+  else { $("#lawRef").classList.add("hide"); }
+  document.querySelectorAll(".lab").forEach(el=>el.className="lab");
+  $("#problematic").checked=false; $("#just").value="";
+  $("#formMsg").textContent="";
+  $("#dlNumber").classList.add("hide");
+  updateSpanReadout();
+  setSpanEnabled(true);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- span selection ---------- */
+function setSpanEnabled(on){
+  const box=$("#spanbox"), pre=$("#premise");
+  if(on){ box.classList.remove("hide"); pre.classList.remove("lock"); }
+  else { box.classList.add("hide"); pre.classList.add("lock"); clearSpan(); }
+}
+function clearSpan(){
+  S.start=null; S.end=null; S.text="";
+  document.querySelectorAll("#premise .ch.sel").forEach(e=>e.classList.remove("sel"));
+  updateSpanReadout();
+}
+function highlight(a,b){
+  document.querySelectorAll("#premise .ch").forEach(e=>{
+    const i=+e.dataset.i; e.classList.toggle("sel", i>=a && i<b);
+  });
+}
+function updateSpanReadout(){
+  const r=$("#spanRead"), o=$("#spanOffsets");
+  if(S.text){ r.textContent=S.text; o.textContent="offsets "+S.start+"–"+S.end; }
+  else { r.innerHTML='<span class="empty">Aucune sélection.</span>'; o.textContent=""; }
+}
+$("#premise").addEventListener("mouseup",()=>{
+  if(S.label==="neutral") return;
+  const sel=window.getSelection();
+  if(!sel || sel.rangeCount===0 || sel.isCollapsed) return;
+  const range=sel.getRangeAt(0);
+  const pre=$("#premise");
+  if(!pre.contains(range.commonAncestorContainer)) return;
+  const idxs=[];
+  pre.querySelectorAll(".ch").forEach(ch=>{ if(range.intersectsNode(ch)) idxs.push(+ch.dataset.i); });
+  if(!idxs.length) return;
+  S.start=Math.min(...idxs); S.end=Math.max(...idxs)+1;
+  S.text=S.cur.premise.slice(S.start,S.end);
+  highlight(S.start,S.end); updateSpanReadout();
+  sel.removeAllRanges();
+});
+
+/* ---------- labels ---------- */
+document.querySelectorAll(".lab").forEach(el=>{
+  el.addEventListener("click",()=>{
+    S.label = el.dataset.l;
+    document.querySelectorAll(".lab").forEach(x=>x.className="lab");
+    el.classList.add(S.label==="entailment"?"sel-ent":S.label==="contradiction"?"sel-con":"sel-neu");
+    if(S.label==="neutral") setSpanEnabled(false); else setSpanEnabled(true);
+    $("#formMsg").textContent="";
+  });
+});
+
+/* ---------- submit ---------- */
+function submit(){
+  const msg=$("#formMsg");
+  if(!S.label){ msg.textContent="Choisissez un label (entailment / contradiction / neutral)."; return; }
+  const problematic=$("#problematic").checked;
+  if(S.label!=="neutral" && !S.text && !problematic){
+    msg.textContent="Sélectionnez le fragment justificatif dans la prémisse (ou cochez « mal posée »)."; return;
+  }
+  const editedHypothesis = nfc($("#hyp").value.trim());
+  const rec={
+    id:S.cur.id, label:S.label,
+    hypothesis_original:S.cur.hypothesis_facts,
+    hypothesis_edited:editedHypothesis,
+    hypothesis_was_edited:editedHypothesis!==S.cur.hypothesis_facts,
+    rationale_start: S.label==="neutral"?0:(S.start??0),
+    rationale_end:   S.label==="neutral"?0:(S.end??0),
+    rationale_text:  S.label==="neutral"?"":(S.text||""),
+    problematic:problematic,
+    justification:$("#just").value.trim(),
+    lot:S.code,
+    timestamp:new Date().toISOString(),
+    time_spent_ms: Date.now()-S.itemStart,
+    focus_lost_count:S.focusLost
+  };
+  S.annotated[S.cur.id]=rec;
+  persist(); updateCounts(); nextItem();
+}
+
+/* ---------- download + resume-number reveal ---------- */
+function download(){
+  const lines = Object.values(S.annotated).map(r=>JSON.stringify(r)).join("\n");
+  const blob=new Blob([lines+"\n"],{type:"application/jsonl"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  const safeName = (S.code||"annotations").replace(/[\\\/]+/g,"_");
+  a.download=safeName+"_annotations.jsonl";
+  a.click(); URL.revokeObjectURL(a.href);
+
+  const total = S.offset + Object.keys(S.annotated).length;
+  const html = 'Fichier téléchargé. Pour reprendre sur un autre appareil, indiquez ce numéro : <b>'+total+'</b>';
+  const n1=$("#dlNumber"), n2=$("#dlNumber2");
+  if(n1){ n1.innerHTML=html; n1.classList.remove("hide"); }
+  if(n2){ n2.innerHTML=html; n2.classList.remove("hide"); }
+}
+
+/* ---------- focus telemetry ---------- */
+window.addEventListener("blur",()=>{ if(!$("#annot").classList.contains("hide")) S.focusLost++; });
+
+/* ---------- wire up ---------- */
+$("#pledgeCheck").addEventListener("change", ()=>{ $("#pledgeBtn").disabled = !$("#pledgeCheck").checked; });
+$("#pledgeBtn").addEventListener("click", ()=>{
+  setPledgeAccepted();
+  showScreen('login');
+  refreshIdentUI();
+  if($("#code").value.trim()) attemptStart();
+});
+
+$("#code").addEventListener("input", ()=>{ $("#codeMsg").textContent=""; refreshIdentUI(); });
+$("#code").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); attemptStart(); } });
+$("#startBtn").addEventListener("click", attemptStart);
+$("#resumeCount").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); attemptStart(); } });
+
+$("#submitBtn").addEventListener("click",submit);
+$("#clearSpan").addEventListener("click",clearSpan);
+$("#dlBtn").addEventListener("click",download);
+$("#dlBtn2").addEventListener("click",download);
+$("#just").addEventListener("paste",e=>e.preventDefault());
+
+/* ---------- init ---------- */
+(function init(){
+  const accepted = pledgeAccepted();
+  showScreen(accepted ? 'login' : 'pledge');
+  const params = new URLSearchParams(location.search);
+  const c = params.get("lot") || params.get("code");
+  if(c){
+    $("#code").value = c.trim();
+    if(accepted){ refreshIdentUI(); attemptStart(); }
+  }
+})();
+</script>
+</body>
+</html>

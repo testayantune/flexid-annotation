@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLEXID — Comparaison des annotations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1F2EC;
+    --card:#FBFAF6;
+    --ink:#1C2430;
+    --ink-soft:#5B6472;
+    --rule:#DCD8CC;
+    --accent:#7A1F2B;
+    --accent-dark:#5E1620;
+    --accent-soft:#F3E2E0;
+    --ent:#2F6B4F; --ent-soft:#E4EEE7; --ent-border:#9BCAAE;
+    --con:#A33A1C; --con-soft:#F7E7DD; --con-border:#E4A98A;
+    --neu:#7C5C12; --neu-soft:#F3ECDA; --neu-border:#D4B86A;
+    --match-bg:#E8F4ED; --match-border:#9BCAAE;
+    --mismatch-bg:#FCE8E3; --mismatch-border:#E4A98A;
+    --font-display:'Newsreader',serif;
+    --font-body:'IBM Plex Sans',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--font-body);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+  /* ── layout ── */
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px 80px}
+
+  /* ── header ── */
+  .topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+    gap:14px;padding:26px 0 22px;border-bottom:1px solid var(--rule);margin-bottom:30px}
+  .topbar-left h1{font-family:var(--font-display);font-size:22px;font-weight:600;margin:0 0 2px;color:var(--ink)}
+  .topbar-left p{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);margin:0}
+
+  /* ── load panel ── */
+  .loadpanel{background:var(--card);border:1px solid var(--rule);border-radius:18px;
+    padding:36px;max-width:640px;margin:0 auto;
+    box-shadow:0 1px 2px rgba(28,36,48,.04),0 20px 40px -30px rgba(28,36,48,.18)}
+  .loadpanel h2{font-family:var(--font-display);font-size:22px;margin:0 0 6px}
+  .loadpanel .sub{color:var(--ink-soft);font-size:14px;margin:0 0 28px}
+  .upload-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  @media(max-width:560px){.upload-row{grid-template-columns:1fr}}
+  .upload-box{background:var(--paper);border:1.5px dashed var(--rule);border-radius:12px;
+    padding:18px 16px;cursor:pointer;transition:.14s;text-align:center;position:relative}
+  .upload-box:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .upload-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .upload-icon{font-size:24px;margin-bottom:6px}
+  .upload-label{font-size:13px;font-weight:600;color:var(--ink)}
+  .upload-hint{font-size:11.5px;color:var(--ink-soft);margin-top:3px}
+  .upload-ok{font-family:var(--font-mono);font-size:11px;color:var(--ent);margin-top:6px;font-weight:600}
+
+  /* ── buttons ── */
+  .btn{appearance:none;border:1px solid var(--rule);background:#fff;color:var(--ink);
+    padding:11px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;
+    font-family:var(--font-body);transition:.14s ease}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;width:100%;display:block;margin-top:4px}
+  .btn-primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed}
+  .btn-sm{padding:7px 14px;font-size:12.5px;border-radius:8px}
+
+  /* ── stats bar ── */
+  .statsbar{display:flex;gap:20px;flex-wrap:wrap;align-items:center;
+    background:var(--card);border:1px solid var(--rule);border-radius:14px;
+    padding:16px 22px;margin-bottom:24px}
+  .stat{text-align:center}
+  .stat-val{font-family:var(--font-mono);font-size:22px;font-weight:600;display:block;line-height:1}
+  .stat-val.ok{color:var(--ent)} .stat-val.warn{color:var(--con)} .stat-val.acc{color:var(--accent)}
+  .stat-lbl{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+  .stat-div{width:1px;background:var(--rule);height:36px;margin:0 4px}
+
+  /* ── filters ── */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+  .fchip{appearance:none;border:1.5px solid var(--rule);background:#fff;color:var(--ink-soft);
+    padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;
+    font-family:var(--font-body);transition:.12s}
+  .fchip:hover,.fchip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .fchip.ent.active{border-color:var(--ent);color:var(--ent);background:var(--ent-soft)}
+  .fchip.con.active{border-color:var(--con);color:var(--con);background:var(--con-soft)}
+  .fchip.neu.active{border-color:var(--neu);color:var(--neu);background:var(--neu-soft)}
+  .fchip.mis.active{border-color:var(--con);color:var(--con);background:var(--mismatch-bg)}
+  .filters-label{font-size:12px;color:var(--ink-soft);font-weight:600;margin-right:4px}
+
+  /* ── item card ── */
+  .item{background:var(--card);border:1px solid var(--rule);border-radius:16px;
+    margin-bottom:18px;overflow:hidden;transition:.14s}
+  .item.match{border-left:4px solid var(--ent)}
+  .item.mismatch{border-left:4px solid var(--con)}
+  .item-head{display:flex;align-items:center;gap:10px;padding:14px 20px 12px;
+    border-bottom:1px solid var(--rule);flex-wrap:wrap;cursor:pointer;user-select:none}
+  .item-head:hover{background:rgba(28,36,48,.02)}
+  .item-id{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);font-weight:600}
+  .item-lawref{font-family:var(--font-mono);font-size:11px;background:var(--accent-soft);
+    color:var(--accent);padding:2px 10px;border-radius:999px;font-weight:600}
+  .item-verdict{margin-left:auto;font-size:12px;font-weight:700;letter-spacing:.04em;
+    padding:4px 12px;border-radius:999px}
+  .verdict-match{background:var(--match-bg);color:var(--ent);border:1px solid var(--match-border)}
+  .verdict-mismatch{background:var(--mismatch-bg);color:var(--con);border:1px solid var(--mismatch-border)}
+  .item-chevron{color:var(--ink-soft);font-size:13px;transition:.2s}
+  .item.open .item-chevron{transform:rotate(90deg)}
+
+  .item-body{display:none;padding:0}
+  .item.open .item-body{display:block}
+
+  /* ── premise / hyp ── */
+  .textblock{padding:18px 22px;border-bottom:1px solid var(--rule)}
+  .textblock-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-soft);margin:0 0 8px;font-weight:600}
+  .premise-text{font-family:var(--font-display);font-size:16px;line-height:1.8;color:var(--ink);
+    border-left:3px solid var(--accent);padding-left:16px;white-space:pre-wrap}
+  .hyp-text{font-family:var(--font-body);font-size:14.5px;line-height:1.7;color:var(--ink);
+    border-left:3px solid var(--rule);padding-left:16px}
+
+  /* ── comparison columns ── */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  @media(max-width:680px){.compare{grid-template-columns:1fr}}
+  .col{padding:18px 22px}
+  .col+.col{border-left:1px solid var(--rule)}
+  @media(max-width:680px){.col+.col{border-left:none;border-top:1px solid var(--rule)}}
+  .col-head{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-soft);margin:0 0 12px;font-weight:600}
+  .col-head span{color:var(--accent)}
+
+  /* ── label badge ── */
+  .lbadge{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:999px;
+    font-size:13px;font-weight:700;margin-bottom:10px}
+  .lbadge.ent{background:var(--ent-soft);color:var(--ent);border:1.5px solid var(--ent-border)}
+  .lbadge.con{background:var(--con-soft);color:var(--con);border:1.5px solid var(--con-border)}
+  .lbadge.neu{background:var(--neu-soft);color:var(--neu);border:1.5px solid var(--neu-border)}
+  .lbadge.none{background:#f0f0ee;color:var(--ink-soft);border:1.5px solid var(--rule)}
+
+  /* ── rationale ── */
+  .rationale{font-family:var(--font-display);font-size:13.5px;font-style:italic;
+    color:var(--ink-soft);border-left:2px solid var(--rule);padding:4px 0 4px 12px;margin-top:6px;line-height:1.6}
+  .rationale.none{opacity:.5}
+  .just{font-size:13px;color:var(--ink-soft);margin-top:8px;font-style:italic}
+  .prob-flag{display:inline-block;font-family:var(--font-mono);font-size:10px;font-weight:700;
+    letter-spacing:.05em;background:#fff3cd;color:#7a5f00;border:1px solid #e8d98a;
+    padding:2px 8px;border-radius:4px;margin-top:6px}
+  .timing{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);margin-top:8px;opacity:.75}
+
+  /* ── empty ── */
+  .empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft)}
+  .empty-state h3{font-family:var(--font-display);font-size:20px;color:var(--ink);margin:0 0 8px}
+
+  .hide{display:none!important}
+  .msg{font-size:13px;color:var(--con);margin-top:10px;min-height:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>FLEXID · Revue comparative</h1>
+      <p>Comparaison annotations expert × annotations gold</p>
+    </div>
+    <button class="btn btn-sm" id="resetBtn" style="display:none">← Charger d'autres fichiers</button>
+  </div>
+
+  <!-- LOAD PANEL -->
+  <div id="loadPanel">
+    <div class="loadpanel">
+      <h2>Charger les fichiers</h2>
+      <p class="sub">Chargez le fichier des instances (avec les labels gold) et le fichier d'annotations de l'annotateur.</p>
+
+      <div class="upload-row">
+        <div class="upload-box" id="box-gold">
+          <input type="file" id="fileGold" accept=".jsonl,.json">
+          <div class="upload-icon">📋</div>
+          <div class="upload-label">Instances gold</div>
+          <div class="upload-hint">instances-Essohouna.jsonl<br>(avec champ <code>label</code>)</div>
+          <div class="upload-ok hide" id="goldOk"></div>
+        </div>
+        <div class="upload-box" id="box-annot">
+          <input type="file" id="fileAnnot" accept=".jsonl,.json">
+          <div class="upload-icon">✍️</div>
+          <div class="upload-label">Annotations expert</div>
+          <div class="upload-hint">Essohouna.jsonl<br>(fichier téléchargé par l'annotateur)</div>
+          <div class="upload-ok hide" id="annotOk"></div>
+        </div>
+      </div>
+
+      <div class="msg" id="loadMsg"></div>
+      <button class="btn btn-primary" id="compareBtn" disabled>Comparer →</button>
+    </div>
+  </div>
+
+  <!-- REVIEW PANEL -->
+  <div id="reviewPanel" class="hide">
+
+    <!-- stats -->
+    <div class="statsbar" id="statsbar"></div>
+
+    <!-- filters -->
+    <div class="filters">
+      <span class="filters-label">Filtrer :</span>
+      <button class="fchip active" data-f="all">Tout</button>
+      <button class="fchip mis" data-f="mismatch">Désaccords</button>
+      <button class="fchip ent" data-f="ent">Entailment gold</button>
+      <button class="fchip con" data-f="con">Contradiction gold</button>
+      <button class="fchip neu" data-f="neu">Neutral gold</button>
+    </div>
+
+    <!-- items -->
+    <div id="itemList"></div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+
+let DATA = [];   // [{gold, annot}]
+
+/* ── file reading ── */
+function readFile(file){
+  return new Promise((res,rej)=>{
+    const fr = new FileReader();
+    fr.onload = () => res(fr.result);
+    fr.onerror = () => rej(fr.error);
+    fr.readAsText(file,"utf-8");
+  });
+}
+function parseJsonl(txt){
+  return txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>JSON.parse(l));
+}
+
+let goldData = null, annotData = null;
+
+async function loadGold(file){
+  const txt = await readFile(file);
+  const arr = parseJsonl(txt);
+  if(!arr.length) throw new Error("Fichier vide");
+  goldData = Object.fromEntries(arr.map(o=>[ String(o.id), o ]));
+  const n = arr.length;
+  const hasLabels = arr.filter(o=>o.label).length;
+  $("#goldOk").textContent = n+" instances" + (hasLabels ? ", labels gold présents ✓" : " (attention : pas de label gold détecté)");
+  $("#goldOk").classList.remove("hide");
+  refreshCompareBtn();
+}
+async function loadAnnot(file){
+  const txt = await readFile(file);
+  const arr = parseJsonl(txt);
+  if(!arr.length) throw new Error("Fichier vide");
+  annotData = Object.fromEntries(arr.map(o=>[ String(o.id), o ]));
+  const n = arr.length;
+  $("#annotOk").textContent = n+" annotations chargées ✓";
+  $("#annotOk").classList.remove("hide");
+  refreshCompareBtn();
+}
+function refreshCompareBtn(){
+  $("#compareBtn").disabled = !(goldData && annotData);
+}
+
+/* ── comparison ── */
+function buildComparison(){
+  const ids = Object.keys(goldData);
+  DATA = ids.map(id=>{
+    const gold = goldData[id] || null;
+    const annot = annotData[id] || null;
+    return { id, gold, annot };
+  });
+  // also include annot-only ids (extra annotations)
+  Object.keys(annotData).forEach(id=>{
+    if(!goldData[id]) DATA.push({ id, gold:null, annot:annotData[id] });
+  });
+}
+
+function labelClass(l){ return l==="entailment"?"ent":l==="contradiction"?"con":l==="neutral"?"neu":"none"; }
+function labelGlyph(l){ return l==="entailment"?"✓":l==="contradiction"?"✕":l==="neutral"?"–":"?"; }
+function fmtMs(ms){
+  if(!ms && ms!==0) return "";
+  if(ms<60000) return Math.round(ms/1000)+"s";
+  return Math.floor(ms/60000)+"m "+Math.round((ms%60000)/1000)+"s";
+}
+
+function buildStats(){
+  let total=0, matched=0, missing=0;
+  const cm = {entailment:{entailment:0,contradiction:0,neutral:0},
+               contradiction:{entailment:0,contradiction:0,neutral:0},
+               neutral:{entailment:0,contradiction:0,neutral:0}};
+  DATA.forEach(({gold,annot})=>{
+    if(!gold||!annot) { missing++; return; }
+    const gl = gold.label, al = annot.label;
+    if(!gl||!al) return;
+    total++;
+    if(gl===al) matched++;
+    if(cm[gl]) cm[gl][al] = (cm[gl][al]||0)+1;
+  });
+  const acc = total ? Math.round((matched/total)*100) : 0;
+  const mismatches = total - matched;
+
+  const bar = $("#statsbar");
+  bar.innerHTML = `
+    <div class="stat"><span class="stat-val acc">${total}</span><span class="stat-lbl">Instances comparées</span></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span class="stat-val ok">${matched}</span><span class="stat-lbl">Accords</span></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span class="stat-val warn">${mismatches}</span><span class="stat-lbl">Désaccords</span></div>
+    <div class="stat-div"></div>
+    <div class="stat"><span class="stat-val ${acc>=80?'ok':acc>=60?'acc':'warn'}">${acc}%</span><span class="stat-lbl">Exactitude</span></div>
+    ${missing?`<div class="stat-div"></div><div class="stat"><span class="stat-val" style="color:var(--ink-soft)">${missing}</span><span class="stat-lbl">Non annotées</span></div>`:''}
+  `;
+}
+
+function renderItem({id, gold, annot}){
+  const gl = gold?.label||null;
+  const al = annot?.label||null;
+  const isMatch = gl && al && gl===al;
+  const isMismatch = gl && al && gl!==al;
+  const lawRef = gold?.law_ref || annot?.law_ref || "";
+  const premise = gold?.premise || "";
+  const hyp = gold?.hypothesis_facts || gold?.hypothesis || "";
+
+  const div = document.createElement("div");
+  div.className = "item " + (isMatch?"match":isMismatch?"mismatch":"");
+  div.dataset.gold = gl||"";
+  div.dataset.match = isMatch?"1":"0";
+
+  const verdictHtml = isMatch
+    ? `<span class="item-verdict verdict-match">✓ Accord</span>`
+    : isMismatch
+    ? `<span class="item-verdict verdict-mismatch">✕ Désaccord</span>`
+    : `<span class="item-verdict" style="background:#f0f0ee;color:var(--ink-soft);border:1px solid var(--rule);padding:4px 12px;border-radius:999px;font-size:12px">— Sans annotation</span>`;
+
+  function colHtml(label, ratText, justText, isProb, timeMs, side){
+    const lc = labelClass(label);
+    const lg = labelGlyph(label);
+    const rHtml = ratText
+      ? `<div class="rationale">«&nbsp;${ratText}&nbsp;»</div>`
+      : `<div class="rationale none">Pas de fragment sélectionné</div>`;
+    const jHtml = justText ? `<div class="just">💬 ${justText}</div>` : "";
+    const pHtml = isProb ? `<div class="prob-flag">⚑ Signalée mal posée</div>` : "";
+    const tHtml = timeMs ? `<div class="timing">⏱ ${fmtMs(timeMs)}</div>` : "";
+    const noAnnotHtml = `<div style="color:var(--ink-soft);font-size:13px;font-style:italic;opacity:.7">Non annotée</div>`;
+    return `
+      <div class="col">
+        <p class="col-head">${side==="gold"?"📋 Label <span>gold</span>":"✍️ Annotation <span>expert</span>"}</p>
+        ${label
+          ? `<div class="lbadge ${lc}">${lg} ${label}</div>${rHtml}${jHtml}${pHtml}${tHtml}`
+          : noAnnotHtml}
+      </div>`;
+  }
+
+  div.innerHTML = `
+    <div class="item-head">
+      <span class="item-id">${id}</span>
+      ${lawRef?`<span class="item-lawref">${lawRef}</span>`:""}
+      ${verdictHtml}
+      <span class="item-chevron">▶</span>
+    </div>
+    <div class="item-body">
+      ${premise?`<div class="textblock">
+        <p class="textblock-label">Texte de loi — prémisse</p>
+        <div class="premise-text">${premise}</div>
+      </div>`:""}
+      ${hyp?`<div class="textblock">
+        <p class="textblock-label">Situation — hypothèse</p>
+        <div class="hyp-text">${hyp}</div>
+      </div>`:""}
+      <div class="compare">
+        ${colHtml(gl, gold?.rationale_text, gold?.justification, false, null, "gold")}
+        ${colHtml(al, annot?.rationale_text, annot?.justification, annot?.problematic, annot?.time_spent_ms, "annot")}
+      </div>
+    </div>
+  `;
+
+  div.querySelector(".item-head").addEventListener("click",()=>{
+    div.classList.toggle("open");
+  });
+  // auto-open mismatches
+  if(isMismatch) div.classList.add("open");
+
+  return div;
+}
+
+function renderAll(filter){
+  const list = $("#itemList");
+  list.innerHTML = "";
+  const filtered = DATA.filter(d=>{
+    if(filter==="all") return true;
+    if(filter==="mismatch") return d.gold?.label && d.annot?.label && d.gold.label !== d.annot.label;
+    if(filter==="ent") return d.gold?.label==="entailment";
+    if(filter==="con") return d.gold?.label==="contradiction";
+    if(filter==="neu") return d.gold?.label==="neutral";
+    return true;
+  });
+  if(!filtered.length){
+    list.innerHTML = `<div class="empty-state"><h3>Aucun résultat</h3><p>Changez le filtre.</p></div>`;
+    return;
+  }
+  filtered.forEach(d=> list.appendChild(renderItem(d)));
+}
+
+/* ── filters ── */
+let activeFilter = "all";
+document.querySelectorAll(".fchip").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".fchip").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.f;
+    renderAll(activeFilter);
+  });
+});
+
+/* ── file inputs ── */
+$("#fileGold").addEventListener("change", async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{ await loadGold(f); $("#loadMsg").textContent=""; }
+  catch(err){ $("#loadMsg").textContent="Erreur fichier gold : "+err.message; }
+});
+$("#fileAnnot").addEventListener("change", async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{ await loadAnnot(f); $("#loadMsg").textContent=""; }
+  catch(err){ $("#loadMsg").textContent="Erreur fichier annotations : "+err.message; }
+});
+
+/* ── compare button ── */
+$("#compareBtn").addEventListener("click",()=>{
+  try{
+    buildComparison();
+    buildStats();
+    renderAll(activeFilter);
+    $("#loadPanel").classList.add("hide");
+    $("#reviewPanel").classList.remove("hide");
+    $("#resetBtn").style.display="";
+  }catch(err){
+    $("#loadMsg").textContent="Erreur : "+err.message;
+  }
+});
+
+/* ── reset ── */
+$("#resetBtn").addEventListener("click",()=>{
+  goldData=null; annotData=null; DATA=[];
+  $("#goldOk").classList.add("hide");
+  $("#annotOk").classList.add("hide");
+  $("#fileGold").value=""; $("#fileAnnot").value="";
+  $("#loadMsg").textContent="";
+  refreshCompareBtn();
+  $("#reviewPanel").classList.add("hide");
+  $("#loadPanel").classList.remove("hide");
+  $("#resetBtn").style.display="none";
+  activeFilter="all";
+  document.querySelectorAll(".fchip").forEach(b=>b.classList.remove("active"));
+  $(".fchip[data-f=all]").classList.add("active");
+});
+</script>
+</body>
+</html>
